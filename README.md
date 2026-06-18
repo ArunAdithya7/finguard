@@ -1,18 +1,11 @@
-# finguard
+# FinGuard
 
-A new Flutter project.
+A financial health and risk monitoring application designed to assess, predict, and manage wealth health.
 
-## Getting Started
+## Features & Automation
+- **CI/CD Pipeline**: Configured with 6 automated workflows in GitHub Actions.
+- **E2E Testing**: Includes 300 automated Appium mobile test cases and 300 Selenium web test cases.
+- **API Load Testing**: Integrated multi-threaded baseline API load testing.
+- **Automated Hosting**: Automatically deployed to GitHub Pages via GitHub Actions workflows.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-"# FinGaurd_Web" 
+For detailed setup instructions, routing guides, and pipeline architecture, please refer to [DEPLOYMENT_TESTING_DOCS.md](DEPLOYMENT_TESTING_DOCS.md).
