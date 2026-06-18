@@ -75,6 +75,13 @@ jobs:
           name: appium-test-reports
           path: appium_tests/reports/
 
+      - name: Output Job Summary
+        if: always()
+        run: |
+          if [ -f appium_tests/reports/appium_e2e_report.md ]; then
+            cat appium_tests/reports/appium_e2e_report.md >> $GITHUB_STEP_SUMMARY
+          fi
+
   # 3. Pages-Build-Development
   pages-build-development:
     name: Pages-Build-Development
@@ -154,6 +161,13 @@ jobs:
         with:
           name: selenium-test-reports
           path: selenium_tests/reports/
+
+      - name: Output Job Summary
+        if: always()
+        run: |
+          if [ -f selenium_tests/reports/finguard_selenium_e2e_report.md ]; then
+            cat selenium_tests/reports/finguard_selenium_e2e_report.md >> $GITHUB_STEP_SUMMARY
+          fi
 
   # 6. Load Tests
   load-tests:
