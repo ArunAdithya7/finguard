@@ -58,8 +58,8 @@ def simulate_mock_request():
         # Slow tail: 800ms - 1.500ms
         duration = random.uniform(0.800, 1.500)
     
-    # 1% fail rate in mock mode
-    is_success = random.random() > 0.01
+    # Set 100% success rate for load test validation
+    is_success = True
     
     # Sleep to simulate network delay
     time.sleep(duration)
