@@ -645,33 +645,58 @@ def compile_and_print_report(steps_log, start_time):
                 category_stats[cat]["failed"] += 1
 
         md_path = os.path.join(config.REPORT_DIR, "appium_e2e_report.md")
-        md = f"This document is a visual representation of the complete E2E testing suite execution. The full stylized Excel sheet has been generated and saved locally at:\n"
-        md += f"appium_tests/reports/finguard_appium_report.xlsx\n\n"
-        md += f"Executive Summary\n"
-        md += f"Metric\tValue\tNotes\n"
-        md += f"Total Test Cases\t{total}\tFull E2E mobile coverage (TC001 to TC304)\n"
-        md += f"Passed\t{passed}\tUI assertions met successfully\n"
-        md += f"Failed\t{failed}\tErrors/exceptions encountered\n"
-        md += f"Skipped\t{skipped}\tConditionally bypassed\n"
-        md += f"Pass Rate\t{pct:.1f}%\tPassed / Total Run\n"
-        md += f"Total Duration\t{total_time:.2f} seconds\tCumulative active driver run time\n\n"
+        md = "# 📱 FinGuard Mobile E2E Testing Summary\n\n"
+        md += "### 🔄 Workflow Pipeline Flowchart\n\n"
+        md += "```mermaid\n"
+        md += "graph TD\n"
+        md += "    Start([Git Push / PR to main]) --> Trigger{GitHub Actions Trigger}\n"
+        md += "    Trigger --> Job1[Android App Build & Test]\n"
+        md += "    Trigger --> Job2[Appium E2E Tests]\n"
+        md += "    Trigger --> Job3[Pages-Build-Development]\n"
+        md += "    Trigger --> Job4[React Web App Build & Test]\n"
+        md += "    Trigger --> Job5[Selenium Web Tests]\n"
+        md += "    Trigger --> Job6[Load Tests]\n"
+        md += "    Job2 --> Summary1[Generate Appium Excel & Markdown Reports]\n"
+        md += "    Job5 --> Summary2[Generate Selenium Excel & Markdown Reports]\n"
+        md += "    Summary1 --> StepSummary1[Append Summary to GitHub Action Run]\n"
+        md += "    Summary2 --> StepSummary2[Append Summary to GitHub Action Run]\n"
+        md += "    style Start fill:#e1f5fe,stroke:#039be5,stroke-width:2px;\n"
+        md += "    style Trigger fill:#e1f5fe,stroke:#039be5,stroke-width:2px;\n"
+        md += "    style Job2 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;\n"
+        md += "    style Summary1 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;\n"
+        md += "    style StepSummary1 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;\n"
+        md += "```\n\n"
+        md += "This document is a visual representation of the complete E2E testing suite execution. The full stylized Excel sheet has been generated and saved locally at:\n"
+        md += "`appium_tests/reports/finguard_appium_report.xlsx`\n\n"
+        md += "### 📊 Executive Summary\n\n"
+        md += "| Metric | Value | Notes |\n"
+        md += "| :--- | :--- | :--- |\n"
+        md += f"| **Total Test Cases** | {total} | Full E2E mobile coverage (TC001 to TC304) |\n"
+        md += f"| **Passed** | {passed} | UI assertions met successfully |\n"
+        md += f"| **Failed** | {failed} | Errors/exceptions encountered |\n"
+        md += f"| **Skipped** | {skipped} | Conditionally bypassed |\n"
+        md += f"| **Pass Rate** | {pct:.1f}% | Passed / Total Run |\n"
+        md += f"| **Total Duration** | {total_time:.2f} seconds | Cumulative active driver run time |\n\n"
         
-        md += f"Category Breakdown\n"
-        md += f"Category\tTotal Tests\tPassed\tFailed\tPass Rate\n"
+        md += "### 🗂️ Category Breakdown\n\n"
+        md += "| Category | Total Tests | Passed | Failed | Pass Rate |\n"
+        md += "| :--- | :---: | :---: | :---: | :---: |\n"
         for cat, stats in category_stats.items():
             cat_pct = (stats["passed"] / stats["total"] * 100) if stats["total"] else 0
-            md += f"{cat}\t{stats['total']}\t{stats['passed']}\t{stats['failed']}\t{cat_pct:.1f}%\n"
+            md += f"| {cat} | {stats['total']} | {stats['passed']} | {stats['failed']} | {cat_pct:.1f}% |\n"
             
-        md += f"\nDetailed Test Cases (TC001 - TC304)\n"
+        md += f"\n### 📝 Detailed Test Cases (TC001 - TC304)\n\n"
         md += f"Below is the complete run log of all {total} test cases:\n\n"
-        md += f"Test ID\tCategory\tTest Case Name\tStatus\tDuration (s)\tDescription / Steps / Error\n"
+        md += "| Test ID | Category | Test Case Name | Status | Duration (s) | Description / Steps / Error |\n"
+        md += "| :--- | :--- | :--- | :---: | :---: | :--- |\n"
         
         for s in steps_log:
             status_symbol = "✅ PASS" if s["status"] == "PASS" else ("❌ FAIL" if s["status"] == "FAIL" else "⏭️ SKIP")
             err_msg = f"Description: {s['name']}"
             if s["error"]:
                 err_msg += f" Error: {s['error']}"
-            md += f"{s['id']}\t{get_category_name(s['id'])}\tVerify {s['name']}\t{status_symbol}\t{s['duration']:.2f}\t{err_msg}\n"
+            err_msg = err_msg.replace('|', '\\|')
+            md += f"| {s['id']} | {get_category_name(s['id'])} | Verify {s['name']} | {status_symbol} | {s['duration']:.2f} | {err_msg} |\n"
             
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(md)

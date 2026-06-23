@@ -395,31 +395,52 @@ function createMarkdownReport(filePath, simulateFailures) {
   const durationSec = (totalTimeMs / 1000).toFixed(2);
   const passRate = ((passed / total) * 100).toFixed(1) + '%';
 
-  let md = `This document is a visual representation of the complete E2E testing suite execution. The full stylized Excel sheet has been generated and saved locally at:
-tests/selenium/reports/finguard_passed_report.xlsx
-
-Executive Summary
-Metric\tValue\tNotes
-Total Test Cases\t${total}\tFull E2E web coverage (FG-TC-001 to FG-TC-304)
-Passed\t${passed}\tUI assertions met successfully
-Failed\t${failed}\tErrors/exceptions encountered
-Skipped\t${skipped}\tConditionally bypassed
-Pass Rate\t${passRate}\tPassed / Total Run
-Total Duration\t${durationSec} seconds\tCumulative active driver run time
-
-Category Breakdown
-Category\tTotal Tests\tPassed\tFailed\tPass Rate\n`;
+  let md = `# 🌐 FinGuard Web E2E Testing Summary\n\n`;
+  md += `### 🔄 Workflow Pipeline Flowchart\n\n`;
+  md += `\`\`\`mermaid\n`;
+  md += `graph TD\n`;
+  md += `    Start([Git Push / PR to main]) --> Trigger{GitHub Actions Trigger}\n`;
+  md += `    Trigger --> Job1[Android App Build & Test]\n`;
+  md += `    Trigger --> Job2[Appium E2E Tests]\n`;
+  md += `    Trigger --> Job3[Pages-Build-Development]\n`;
+  md += `    Trigger --> Job4[React Web App Build & Test]\n`;
+  md += `    Trigger --> Job5[Selenium Web Tests]\n`;
+  md += `    Trigger --> Job6[Load Tests]\n`;
+  md += `    Job2 --> Summary1[Generate Appium Excel & Markdown Reports]\n`;
+  md += `    Job5 --> Summary2[Generate Selenium Excel & Markdown Reports]\n`;
+  md += `    Summary1 --> StepSummary1[Append Summary to GitHub Action Run]\n`;
+  md += `    Summary2 --> StepSummary2[Append Summary to GitHub Action Run]\n`;
+  md += `    style Start fill:#e1f5fe,stroke:#039be5,stroke-width:2px;\n`;
+  md += `    style Trigger fill:#e1f5fe,stroke:#039be5,stroke-width:2px;\n`;
+  md += `    style Job5 fill:#ede7f6,stroke:#4527a0,stroke-width:2px;\n`;
+  md += `    style Summary2 fill:#ede7f6,stroke:#4527a0,stroke-width:2px;\n`;
+  md += `    style StepSummary2 fill:#ede7f6,stroke:#4527a0,stroke-width:2px;\n`;
+  md += `\`\`\`\n\n`;
+  md += `This document is a visual representation of the complete E2E testing suite execution. The full stylized Excel sheet has been generated and saved locally at:\n`;
+  md += `\`tests/selenium/reports/finguard_passed_report.xlsx\`\n\n`;
+  md += `### 📊 Executive Summary\n\n`;
+  md += `| Metric | Value | Notes |\n`;
+  md += `| :--- | :--- | :--- |\n`;
+  md += `| **Total Test Cases** | ${total} | Full E2E web coverage (FG-TC-001 to FG-TC-304) |\n`;
+  md += `| **Passed** | ${passed} | UI assertions met successfully |\n`;
+  md += `| **Failed** | ${failed} | Errors/exceptions encountered |\n`;
+  md += `| **Skipped** | ${skipped} | Conditionally bypassed |\n`;
+  md += `| **Pass Rate** | ${passRate} | Passed / Total Run |\n`;
+  md += `| **Total Duration** | ${durationSec} seconds | Cumulative active driver run time |\n\n`;
+  md += `### 🗂️ Category Breakdown\n\n`;
+  md += `| Category | Total Tests | Passed | Failed | Pass Rate |\n`;
+  md += `| :--- | :---: | :---: | :---: | :---: |\n`;
 
   for (const cat in categoryStats) {
     const stats = categoryStats[cat];
     const catPassRate = ((stats.passed / stats.total) * 100).toFixed(1) + '%';
-    md += `${cat}\t${stats.total}\t${stats.passed}\t${stats.failed}\t${catPassRate}\n`;
+    md += `| ${cat} | ${stats.total} | ${stats.passed} | ${stats.failed} | ${catPassRate} |\n`;
   }
 
-  md += `\nDetailed Test Cases (FG-TC-001 - FG-TC-304)
-Below is the complete run log of all ${total} test cases:
-
-Test ID\tCategory\tTest Case Name\tStatus\tDuration (s)\tDescription / Steps / Error\n`;
+  md += `\n### 📝 Detailed Test Cases (FG-TC-001 - FG-TC-304)\n\n`;
+  md += `Below is the complete run log of all ${total} test cases:\n\n`;
+  md += `| Test ID | Category | Test Case Name | Status | Duration (s) | Description / Steps / Error |\n`;
+  md += `| :--- | :--- | :--- | :---: | :---: | :--- |\n`;
 
   rawTestCases.forEach((tc, index) => {
     const isFailedCase = simulateFailures && failedIndices.includes(index);
@@ -428,7 +449,8 @@ Test ID\tCategory\tTest Case Name\tStatus\tDuration (s)\tDescription / Steps / E
     const detail = isFailedCase 
       ? 'AssertionError: Expected element to be visible but was hidden. Page timeout (3000ms).' 
       : `Description: ${tc.desc}`;
-    md += `${tc.id}\t${tc.category}\tVerify ${tc.desc}\t${status}\t${durSec}\t${detail}\n`;
+    const cleanDetail = detail.replace(/\|/g, '\\|');
+    md += `| ${tc.id} | ${tc.category} | Verify ${tc.desc} | ${status} | ${durSec} | ${cleanDetail} |\n`;
   });
 
   fs.writeFileSync(filePath, md, 'utf8');
